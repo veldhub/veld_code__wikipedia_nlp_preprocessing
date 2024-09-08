@@ -1,0 +1,12 @@
+x-veld:
+  code:
+
+services:
+  veld_download_and_extract:
+    build: .
+    volumes:
+      - ./src/:/veld/code/:z
+    command: /veld/code/download_and_extract.sh
+    environment:
+      wikipedia_dump_url: null
+
