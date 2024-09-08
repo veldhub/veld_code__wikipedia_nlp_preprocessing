@@ -20,5 +20,5 @@ else
 fi
 
 export tmp_extracted_path
-python3 /veld/code/download_and_extract.py
+python /veld/code/download_and_extract.py
 
