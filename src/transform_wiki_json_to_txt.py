@@ -9,8 +9,7 @@ import yaml
 
 
 IN_FILE_FOLDER_PATH = "/veld/input/"
-OUT_TXT_FOLDER = "/veld/output/data/"
-OUT_TXT_PATH = OUT_TXT_FOLDER + os.getenv("out_txt_file")
+OUT_TXT_PATH = "/veld/output/" + os.getenv("out_txt_file")
 OUT_VELD_DATA_YAML_PATH = "/veld/output/veld_data_transformed.yaml"
 CPU_COUNT = os.getenv("cpu_count")
 if CPU_COUNT is None:
@@ -114,8 +113,6 @@ def run_multi_process(file_list_list, tmp_file_list):
 
 def join_tmp_files(tmp_file_list):
     print("joining tmp files into one.", flush=True)
-    if not os.path.exists(OUT_TXT_FOLDER):
-        os.mkdir(OUT_TXT_FOLDER)
     with open(OUT_TXT_PATH, "w") as f_out:
         for tmp_file_path in tmp_file_list:
             with open(tmp_file_path, "r") as f_in:
