@@ -1,4 +1,5 @@
 import json
+import random
 import os
 import subprocess
 from multiprocessing import Process
@@ -10,8 +11,12 @@ import yaml
 IN_FILE_FOLDER_PATH = "/veld/input/"
 OUT_TXT_PATH = "/veld/output/data/" + os.getenv("out_txt_file")
 OUT_VELD_DATA_YAML_PATH = "/veld/output/veld_data_transformed.yaml"
-CPU_COUNT = os.cpu_count() - 2
-INFO_INTERVAL = 100
+CPU_COUNT = os.getenv("cpu_count")
+if CPU_COUNT is None:
+    CPU_COUNT = os.cpu_count()
+SAMPLE_SIZE_PERCENTAGE = os.getenv("sample_size_percentage")
+SAMPLE_RANDOM_SEED = os.getenv("sample_random_seed")
+INFO_INTERVAL = os.getenv("info_interval")
 TMP_FILE_FOLDER = "/tmp"
 
 
@@ -49,6 +54,13 @@ def get_interval_index_list(l, n):
 def get_file_list_list():
     print("creating list of lists of files to process per CPU core", flush=True)
     file_list_all = [IN_FILE_FOLDER_PATH + f for f in os.listdir(IN_FILE_FOLDER_PATH)]
+    if SAMPLE_SIZE_PERCENTAGE is not None and SAMPLE_SIZE_PERCENTAGE != 100:
+        if SAMPLE_RANDOM_SEED is not None:
+            random.seed(SAMPLE_RANDOM_SEED)
+        random.shuffle(file_list_all)
+        sample_end_index = int((len(file_list_all) / 100) * SAMPLE_SIZE_PERCENTAGE)
+        print(f"reduced file list from {len(file_list_all)} files to sample size of {sample_end_index - 1}")
+        file_list_all = file_list_all[:sample_end_index]
     file_list_list = []
     file_list_tmp = []
     interval_index_list = get_interval_index_list(file_list_all, CPU_COUNT)
@@ -58,7 +70,7 @@ def get_file_list_list():
             file_list_list.append(file_list_tmp)
             file_list_tmp = []
     print(f"done. number of all individual files: {len(file_list_all)}, split across {CPU_COUNT}"\
-        " subsets for multiprocessing cores.", flush=True)
+        " subsets for multiprocessing.", flush=True)
     return file_list_list
 
 
