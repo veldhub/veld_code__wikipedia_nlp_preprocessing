@@ -1,17 +1,37 @@
 import json
 import os
+import subprocess
 from multiprocessing import Process
 
 import spacy
+import yaml
 
 
 IN_FILE_FOLDER_PATH = "/veld/input/"
-OUT_FILE_PATH = "/veld/output/" + os.getenv("out_txt_file")
+OUT_TXT_PATH = "/veld/output/data/" + os.getenv("out_txt_file")
+OUT_VELD_DATA_YAML_PATH = "/veld/output/veld_data_transformed.yaml"
 CPU_COUNT = os.cpu_count() - 2
 INFO_INTERVAL = 100
 TMP_FILE_FOLDER = "/tmp"
 
 
+veld_data_yaml = {
+    "x-veld": {
+        "data": {
+            "description": "transformed json files, with their contents split into sentences, and"\
+                " all merged together into one txt file.",
+            "topics": "NLP",
+            "contents": [
+                "training data",
+                "raw text",
+            ],
+            "file_type": "txt",
+            "additional": {
+                "data size": None,
+            }
+        }
+    }
+}
 nlp = spacy.load("de_core_news_lg")
 
 
@@ -37,7 +57,8 @@ def get_file_list_list():
         if i in interval_index_list:
             file_list_list.append(file_list_tmp)
             file_list_tmp = []
-    print(f"done. number of files to processed: {len(file_list_all)}, split across {CPU_COUNT} cpu cores.", flush=True)
+    print(f"done. number of files to processed: {len(file_list_all)}, split across {CPU_COUNT} cpu"\
+        " cores.", flush=True)
     return file_list_list
 
 
@@ -57,12 +78,14 @@ def run_multi_process(file_list_list, tmp_file_list):
                     for sent in doc.sents:
                         f_out.write(sent.text + "\n")
                 if i in interval_index_list:
-                    print(f"process: {p_id}, done with {i + 1} files, out of {len(file_list)}", flush=True)
+                    print(f"process: {p_id}: done with {i + 1} files, out of {len(file_list)}", \
+                        flush=True)
         print(f"process {p_id} done", flush=True)
 
     process_list = []
     for i, tmp_file_path in enumerate(tmp_file_list):
-        process_list.append(Process(target=transform_files_process, args=(tmp_file_path, i, file_list_list[i])))
+        process_list.append(Process(target=transform_files_process, args=(tmp_file_path, i, \
+            file_list_list[i])))
     for process in process_list:
         process.start()
     for process in process_list:
@@ -71,11 +94,16 @@ def run_multi_process(file_list_list, tmp_file_list):
 
 def join_tmp_files(tmp_file_list):
     print("joining tmp files into one.", flush=True)
-    with open(OUT_FILE_PATH, "w") as f_out:
+    with open(OUT_TXT_PATH, "w") as f_out:
         for tmp_file_path in tmp_file_list:
             with open(tmp_file_path, "r") as f_in:
                 f_out.write(f_in.read())
-    print("done", flush=True)
+    result = subprocess.run(["du", "-sh", OUT_TXT_PATH], capture_output=True, text=True)
+    data_size = result.stdout.split()[0]
+    veld_data_yaml["x-veld"]["data"]["additional"]["data size"] = data_size
+    print(f"done. Size of data: {data_size}", flush=True)
+    with open(OUT_VELD_DATA_YAML_PATH, "w") as f:
+        yaml.dump(veld_data_yaml, f, sort_keys=False)
 
 
 def main():
