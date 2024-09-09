@@ -57,8 +57,8 @@ def get_file_list_list():
         if i in interval_index_list:
             file_list_list.append(file_list_tmp)
             file_list_tmp = []
-    print(f"done. number of files to processed: {len(file_list_all)}, split across {CPU_COUNT} cpu"\
-        " cores.", flush=True)
+    print(f"done. number of all individual files: {len(file_list_all)}, split across {CPU_COUNT}"\
+        " subsets for multiprocessing cores.", flush=True)
     return file_list_list
 
 
