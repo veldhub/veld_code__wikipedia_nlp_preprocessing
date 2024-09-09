@@ -14,8 +14,8 @@ veld_data_yaml = {
     "x-veld": {
         "data": {
             "description": "extracted wikipedia data, where each json file is one article.",
+            "topics": "NLP",
             "contents": [
-                "NLP",
                 "training data",
                 "raw text",
             ],
