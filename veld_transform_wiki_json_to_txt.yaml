@@ -10,7 +10,7 @@ services:
     environment:
       out_txt_file: null
       cpu_count: null
-      sample_size_percentage: null
+      sample_size_percentage: 100
       sample_random_seed: null
       info_interval: 100
 

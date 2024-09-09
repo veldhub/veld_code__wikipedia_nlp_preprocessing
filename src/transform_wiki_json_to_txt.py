@@ -9,15 +9,23 @@ import yaml
 
 
 IN_FILE_FOLDER_PATH = "/veld/input/"
-OUT_TXT_PATH = "/veld/output/data/" + os.getenv("out_txt_file")
+OUT_TXT_FOLDER = "/veld/output/data/"
+OUT_TXT_PATH = OUT_TXT_FOLDER + os.getenv("out_txt_file")
 OUT_VELD_DATA_YAML_PATH = "/veld/output/veld_data_transformed.yaml"
 CPU_COUNT = os.getenv("cpu_count")
 if CPU_COUNT is None:
     CPU_COUNT = os.cpu_count()
-SAMPLE_SIZE_PERCENTAGE = os.getenv("sample_size_percentage")
+else:
+    CPU_COUNT = int(CPU_COUNT)
+SAMPLE_SIZE_PERCENTAGE = float(os.getenv("sample_size_percentage"))
 SAMPLE_RANDOM_SEED = os.getenv("sample_random_seed")
-INFO_INTERVAL = os.getenv("info_interval")
+INFO_INTERVAL = int(os.getenv("info_interval"))
 TMP_FILE_FOLDER = "/tmp"
+print(f"OUT_TXT_PATH: {OUT_TXT_PATH}")
+print(f"CPU_COUNT: {CPU_COUNT}")
+print(f"SAMPLE_SIZE_PERCENTAGE: {SAMPLE_SIZE_PERCENTAGE}")
+print(f"SAMPLE_RANDOM_SEED: {SAMPLE_RANDOM_SEED}")
+print(f"INFO_INTERVAL: {INFO_INTERVAL}")
 
 
 veld_data_yaml = {
@@ -54,7 +62,7 @@ def get_interval_index_list(l, n):
 def get_file_list_list():
     print("creating list of lists of files to process per CPU core", flush=True)
     file_list_all = [IN_FILE_FOLDER_PATH + f for f in os.listdir(IN_FILE_FOLDER_PATH)]
-    if SAMPLE_SIZE_PERCENTAGE is not None and SAMPLE_SIZE_PERCENTAGE != 100:
+    if  SAMPLE_SIZE_PERCENTAGE != 100:
         if SAMPLE_RANDOM_SEED is not None:
             random.seed(SAMPLE_RANDOM_SEED)
         random.shuffle(file_list_all)
@@ -79,7 +87,7 @@ def run_multi_process(file_list_list, tmp_file_list):
     def transform_files_process(tmp_file_path, p_id, file_list):
         if os.path.exists(tmp_file_path):
             os.remove(tmp_file_path)
-        print(f"process {p_id} start", flush=True)
+        print(f"process {p_id}: start", flush=True)
         with open(tmp_file_path, "a") as f_out:
             interval_index_list = get_interval_index_list(file_list, INFO_INTERVAL)
             for i, file_path_in in enumerate(file_list):
@@ -90,9 +98,9 @@ def run_multi_process(file_list_list, tmp_file_list):
                     for sent in doc.sents:
                         f_out.write(sent.text + "\n")
                 if i in interval_index_list:
-                    print(f"process: {p_id}: done with {i + 1} files, out of {len(file_list)}", \
+                    print(f"process {p_id}: done with {i + 1} files, out of {len(file_list)}", \
                         flush=True)
-        print(f"process {p_id} done", flush=True)
+        print(f"process {p_id}: done", flush=True)
 
     process_list = []
     for i, tmp_file_path in enumerate(tmp_file_list):
@@ -106,6 +114,8 @@ def run_multi_process(file_list_list, tmp_file_list):
 
 def join_tmp_files(tmp_file_list):
     print("joining tmp files into one.", flush=True)
+    if not os.path.exists(OUT_TXT_FOLDER):
+        os.mkdir(OUT_TXT_FOLDER)
     with open(OUT_TXT_PATH, "w") as f_out:
         for tmp_file_path in tmp_file_list:
             with open(tmp_file_path, "r") as f_in:
