@@ -11,6 +11,7 @@ import yaml
 IN_FILE_FOLDER_PATH = "/veld/input/"
 OUT_TXT_PATH = "/veld/output/" + os.getenv("out_txt_file")
 OUT_VELD_DATA_YAML_PATH = "/veld/output/veld_data_transformed.yaml"
+OUT_DATA_DESCRIPTION = os.getenv("out_data_description")
 CPU_COUNT = os.getenv("cpu_count")
 if CPU_COUNT is None:
     CPU_COUNT = os.cpu_count()
@@ -30,8 +31,7 @@ print(f"INFO_INTERVAL: {INFO_INTERVAL}")
 veld_data_yaml = {
     "x-veld": {
         "data": {
-            "description": "transformed json files, with their contents split into sentences, and"\
-                " all merged together into one txt file.",
+            "description": OUT_DATA_DESCRIPTION,
             "topics": "NLP",
             "contents": [
                 "training data",

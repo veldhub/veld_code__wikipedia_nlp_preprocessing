@@ -8,12 +8,13 @@ import yaml
 IN_TMP_PATH = os.getenv("tmp_extracted_path")
 OUT_JSON_PATH = "/veld/output/data/"
 OUT_VELD_DATA_YAML_PATH = "/veld/output/veld_data_extracted.yaml"
+OUT_DATA_DESCRIPTION = os.getenv("out_data_description")
 
 
 veld_data_yaml = {
     "x-veld": {
         "data": {
-            "description": "extracted wikipedia data, where each json file is one article.",
+            "description": OUT_DATA_DESCRIPTION,
             "topics": "NLP",
             "contents": [
                 "training data",

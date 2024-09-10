@@ -9,4 +9,5 @@ services:
     command: /veld/code/download_and_extract.sh
     environment:
       wikipedia_dump_url: null
+      out_data_description: null
 

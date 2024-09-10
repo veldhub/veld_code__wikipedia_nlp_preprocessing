@@ -9,6 +9,7 @@ services:
     command: python /veld/code/transform_wiki_json_to_txt.py
     environment:
       out_txt_file: null
+      out_data_description: null
       cpu_count: null
       sample_size_percentage: 100
       sample_random_seed: null
