@@ -8,7 +8,7 @@ import spacy
 import yaml
 
 
-IN_FILE_FOLDER_PATH = "/veld/input/"
+IN_JSON_FOLDER_PATH = "/veld/input/" + os.getenv("in_json_folder") + "/"
 OUT_TXT_PATH = "/veld/output/" + os.getenv("out_txt_file")
 OUT_VELD_DATA_YAML_PATH = "/veld/output/veld_data_transformed.yaml"
 OUT_DATA_DESCRIPTION = os.getenv("out_data_description")
@@ -21,6 +21,7 @@ SAMPLE_SIZE_PERCENTAGE = float(os.getenv("sample_size_percentage"))
 SAMPLE_RANDOM_SEED = os.getenv("sample_random_seed")
 INFO_INTERVAL = int(os.getenv("info_interval"))
 TMP_FILE_FOLDER = "/tmp"
+print(f"IN_JSON_FOLDER_PATH: {IN_JSON_FOLDER_PATH}")
 print(f"OUT_TXT_PATH: {OUT_TXT_PATH}")
 print(f"CPU_COUNT: {CPU_COUNT}")
 print(f"SAMPLE_SIZE_PERCENTAGE: {SAMPLE_SIZE_PERCENTAGE}")
@@ -60,7 +61,7 @@ def get_interval_index_list(l, n):
 
 def get_file_list_list():
     print("creating list of lists of files to process per CPU core", flush=True)
-    file_list_all = [IN_FILE_FOLDER_PATH + f for f in os.listdir(IN_FILE_FOLDER_PATH)]
+    file_list_all = [IN_JSON_FOLDER_PATH + f for f in os.listdir(IN_JSON_FOLDER_PATH)]
     if  SAMPLE_SIZE_PERCENTAGE != 100:
         if SAMPLE_RANDOM_SEED is not None:
             random.seed(SAMPLE_RANDOM_SEED)
