@@ -12,6 +12,7 @@ services:
       out_txt_file: null
       out_data_description: null
       cpu_count: null
+      set_split_sentences: null
       sample_size_percentage: 100
       sample_random_seed: null
       info_interval: 100

@@ -20,11 +20,17 @@ else:
 SAMPLE_SIZE_PERCENTAGE = float(os.getenv("sample_size_percentage"))
 SAMPLE_RANDOM_SEED = os.getenv("sample_random_seed")
 INFO_INTERVAL = int(os.getenv("info_interval"))
+SET_SPLIT_SENTENCES = os.getenv("set_split_sentences")
+if SET_SPLIT_SENTENCES == "true":
+    SET_SPLIT_SENTENCES = True
+else:
+    SET_SPLIT_SENTENCES = False
 TMP_FILE_FOLDER = "/tmp"
 print(f"IN_JSON_FOLDER_PATH: {IN_JSON_FOLDER_PATH}")
 print(f"OUT_TXT_PATH: {OUT_TXT_PATH}")
 print(f"CPU_COUNT: {CPU_COUNT}")
 print(f"SAMPLE_SIZE_PERCENTAGE: {SAMPLE_SIZE_PERCENTAGE}")
+print(f"SET_SPLIT_SENTENCES: {SET_SPLIT_SENTENCES}")
 print(f"SAMPLE_RANDOM_SEED: {SAMPLE_RANDOM_SEED}")
 print(f"INFO_INTERVAL: {INFO_INTERVAL}")
 
@@ -94,9 +100,12 @@ def run_multi_process(file_list_list, tmp_file_list):
                 with open(file_path_in, "r") as f_in:
                     data = json.load(f_in)
                     text = data["text"].replace("\n", " ")
-                    doc = nlp(text)
-                    for sent in doc.sents:
-                        f_out.write(sent.text + "\n")
+                    if SET_SPLIT_SENTENCES:
+                        doc = nlp(text)
+                        for sent in doc.sents:
+                            f_out.write(sent.text + "\n")
+                    else:
+                        f_out.write(text + "\n")
                 if i in interval_index_list:
                     print(f"process {p_id}: done with {i + 1} files, out of {len(file_list)}", \
                         flush=True)
