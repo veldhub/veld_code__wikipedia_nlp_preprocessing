@@ -17,6 +17,8 @@ if CPU_COUNT is None:
     CPU_COUNT = os.cpu_count()
 else:
     CPU_COUNT = int(CPU_COUNT)
+    if CPU_COUNT > os.cpu_count():
+        CPU_COUNT = os.cpu_count()
 SAMPLE_SIZE_PERCENTAGE = float(os.getenv("sample_size_percentage"))
 SAMPLE_RANDOM_SEED = os.getenv("sample_random_seed")
 INFO_INTERVAL = int(os.getenv("info_interval"))
