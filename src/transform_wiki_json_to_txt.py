@@ -23,7 +23,7 @@ SAMPLE_SIZE_PERCENTAGE = float(os.getenv("sample_size_percentage"))
 SAMPLE_RANDOM_SEED = os.getenv("sample_random_seed")
 INFO_INTERVAL = int(os.getenv("info_interval"))
 SET_SPLIT_SENTENCES = os.getenv("set_split_sentences")
-if SET_SPLIT_SENTENCES == "true":
+if SET_SPLIT_SENTENCES.lower() == "true":
     SET_SPLIT_SENTENCES = True
 else:
     SET_SPLIT_SENTENCES = False
@@ -70,6 +70,7 @@ def get_interval_index_list(l, n):
 def get_file_list_list():
     print("creating list of lists of files to process per CPU core", flush=True)
     file_list_all = [IN_JSON_FOLDER_PATH + f for f in os.listdir(IN_JSON_FOLDER_PATH)]
+    file_list_all = sorted(file_list_all)
     if  SAMPLE_SIZE_PERCENTAGE != 100:
         if SAMPLE_RANDOM_SEED is not None:
             random.seed(SAMPLE_RANDOM_SEED)
