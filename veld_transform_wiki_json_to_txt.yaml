@@ -1,10 +1,11 @@
 x-veld:
-  code:
-    description: "transforming wikipedia raw jsons to a single txt file."
-    topics:
-      - "NLP"
-      - "Machine Learning"
-      - "ETL"
+   code:
+     description: "transforming wikipedia raw jsons to a single txt file."  # mapped auf crm:P3_has_note
+     topic:
+        - ETL
+        - NLP
+ #    implements: 
+        - file-conversion # instance of crmcls:X6_Method
 
     inputs:
       - description: "a folder, containing json files, where each file contains the contents of a wikipedia article"
