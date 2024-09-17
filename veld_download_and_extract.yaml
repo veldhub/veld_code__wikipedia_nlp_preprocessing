@@ -1,11 +1,35 @@
 x-veld:
   code:
+    description: "downloading wikipedia archive and extracting each article to a json file."
+    topics:
+      - "NLP"
+      - "Machine Learning"
+      - "ETL"
+
+    outputs:
+      - description: "a folder, containing json files, where each file contains the contents of a wikipedia article"
+        volume: /veld/output/
+        file_type: "json"
+        contents: 
+          - "NLP training data"
+          - "raw text"
+
+    environment:
+      wikipedia_dump_url: 
+        description: "url to a wikipdedia dump download, from https://dumps.wikimedia.org/"
+        env_type: "url"
+      out_data_description: 
+        description: "short human description for the data and its purpose"
+        env_type: "string"
+        optional: true
+      
 
 services:
   veld_download_and_extract:
     build: .
     volumes:
       - ./src/:/veld/code/:z
+      - ./data/wikipedia_json/:/veld/output/:z
     command: /veld/code/download_and_extract.sh
     environment:
       wikipedia_dump_url: null
