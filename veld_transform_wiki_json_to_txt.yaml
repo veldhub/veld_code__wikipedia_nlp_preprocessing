@@ -8,7 +8,7 @@ x-veld:
         - file-conversion # instance of crmcls:X6_Method
 
     inputs:
-      - description: "a folder, containing json files, where each file contains the contents of a wikipedia article"
+      - description: "a folder with json files, where each file contains the contents of a wikipedia article"
         volume: /veld/input/
         environment: in_json_folder
         file_type: "json"
