@@ -54,7 +54,7 @@ x-veld:
         env_type: "int"
         optional: true
         default: 42
-      info_interval:
+      buffer_segments:
         description: "The interval at which progress should be printed. E.g. 100 means to print hundred times during processing."
         env_type: "int"
         optional: true 
@@ -76,5 +76,5 @@ services:
       set_split_sentences: false
       sample_size_percentage: 100
       sample_random_seed: 42
-      info_interval: 100
+      buffer_segments: 10
 

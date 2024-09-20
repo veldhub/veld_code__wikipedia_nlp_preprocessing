@@ -9,4 +9,5 @@ RUN pip install ipdb==0.13.13
 RUN pip install PyYAML==6.0.2 
 RUN pip install spacy==3.7.6
 RUN python -m spacy download de_core_news_lg
+WORKDIR /veld/code/
 

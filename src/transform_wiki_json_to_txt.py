@@ -1,8 +1,10 @@
 import json
-import random
+import math
 import os
+import random
 import subprocess
 from multiprocessing import Process
+from datetime import datetime
 
 import spacy
 import yaml
@@ -10,6 +12,7 @@ import yaml
 
 IN_JSON_FOLDER_PATH = "/veld/input/" + os.getenv("in_json_folder") + "/"
 OUT_TXT_PATH = "/veld/output/" + os.getenv("out_txt_file")
+OUT_LOG_PATH = "/veld/output/log.txt"
 OUT_VELD_DATA_YAML_PATH = "/veld/output/veld_data_transformed.yaml"
 OUT_DATA_DESCRIPTION = os.getenv("out_data_description")
 CPU_COUNT = os.getenv("cpu_count")
@@ -21,22 +24,13 @@ else:
         CPU_COUNT = os.cpu_count()
 SAMPLE_SIZE_PERCENTAGE = float(os.getenv("sample_size_percentage"))
 SAMPLE_RANDOM_SEED = os.getenv("sample_random_seed")
-INFO_INTERVAL = int(os.getenv("info_interval"))
+BUFFER_SEGMENTS = int(os.getenv("buffer_segments"))
 SET_SPLIT_SENTENCES = os.getenv("set_split_sentences")
 if SET_SPLIT_SENTENCES.lower() == "true":
     SET_SPLIT_SENTENCES = True
 else:
     SET_SPLIT_SENTENCES = False
 TMP_FILE_FOLDER = "/tmp"
-print(f"IN_JSON_FOLDER_PATH: {IN_JSON_FOLDER_PATH}")
-print(f"OUT_TXT_PATH: {OUT_TXT_PATH}")
-print(f"CPU_COUNT: {CPU_COUNT}")
-print(f"SAMPLE_SIZE_PERCENTAGE: {SAMPLE_SIZE_PERCENTAGE}")
-print(f"SET_SPLIT_SENTENCES: {SET_SPLIT_SENTENCES}")
-print(f"SAMPLE_RANDOM_SEED: {SAMPLE_RANDOM_SEED}")
-print(f"INFO_INTERVAL: {INFO_INTERVAL}")
-
-
 veld_data_yaml = {
     "x-veld": {
         "data": {
@@ -56,93 +50,122 @@ veld_data_yaml = {
 nlp = spacy.load("de_core_news_lg")
 
 
-def get_interval_index_list(l, n):
-    step = int(round(len(l) / n))
-    interval_index_list = []
-    for i in range(1, n + 1):
-        if i < n:
-            interval_index_list.append(step * i - 1)
-        else:
-            interval_index_list.append(len(l) - 1)
-    return interval_index_list
+def print_and_log(msg):
+    print(msg, flush=True)
+    with open(OUT_LOG_PATH, "a") as out:
+        out.write(msg + "\n")
 
 
-def get_file_list_list():
-    print("creating list of lists of files to process per CPU core", flush=True)
-    file_list_all = [IN_JSON_FOLDER_PATH + f for f in os.listdir(IN_JSON_FOLDER_PATH)]
-    file_list_all = sorted(file_list_all)
+def get_file_list():
+    print_and_log("creating list of lists of files to process")
+    file_list = [IN_JSON_FOLDER_PATH + f for f in os.listdir(IN_JSON_FOLDER_PATH)]
+    file_list = sorted(file_list)
     if  SAMPLE_SIZE_PERCENTAGE != 100:
         if SAMPLE_RANDOM_SEED is not None:
             random.seed(SAMPLE_RANDOM_SEED)
-        random.shuffle(file_list_all)
-        sample_end_index = int((len(file_list_all) / 100) * SAMPLE_SIZE_PERCENTAGE)
-        print(f"reduced file list from {len(file_list_all)} files to sample size of {sample_end_index - 1}")
-        file_list_all = file_list_all[:sample_end_index]
-    file_list_list = []
-    file_list_tmp = []
-    interval_index_list = get_interval_index_list(file_list_all, CPU_COUNT)
-    for i, f in enumerate(file_list_all):
-        file_list_tmp.append(f)
-        if i in interval_index_list:
-            file_list_list.append(file_list_tmp)
-            file_list_tmp = []
-    print(f"done. number of all individual files: {len(file_list_all)}, split across {CPU_COUNT}"\
-        " subsets for multiprocessing.", flush=True)
-    return file_list_list
+        random.shuffle(file_list)
+        sample_end_index = int((len(file_list) / 100) * SAMPLE_SIZE_PERCENTAGE)
+        print_and_log(f"reduced file list from {len(file_list)} files to sample size of {sample_end_index - 1}")
+        file_list = file_list[:sample_end_index]
+    return file_list
 
 
-def run_multi_process(file_list_list, tmp_file_list):
-
-    def transform_files_process(tmp_file_path, p_id, file_list):
-        if os.path.exists(tmp_file_path):
-            os.remove(tmp_file_path)
-        print(f"process {p_id}: start", flush=True)
-        with open(tmp_file_path, "a") as f_out:
-            interval_index_list = get_interval_index_list(file_list, INFO_INTERVAL)
-            for i, file_path_in in enumerate(file_list):
-                with open(file_path_in, "r") as f_in:
-                    data = json.load(f_in)
-                    text = data["text"].replace("\n", " ")
-                    if SET_SPLIT_SENTENCES:
-                        doc = nlp(text)
-                        for sent in doc.sents:
-                            f_out.write(sent.text + "\n")
-                    else:
-                        f_out.write(text + "\n")
-                if i in interval_index_list:
-                    print(f"process {p_id}: done with {i + 1} files, out of {len(file_list)}", \
-                        flush=True)
-        print(f"process {p_id}: done", flush=True)
-
-    process_list = []
-    for i, tmp_file_path in enumerate(tmp_file_list):
-        process_list.append(Process(target=transform_files_process, args=(tmp_file_path, i, \
-            file_list_list[i])))
-    for process in process_list:
-        process.start()
-    for process in process_list:
-        process.join()
+def single_process(p_id, individual_list):
+    print_and_log(f"process {p_id}: start")
+    out_tmp_file_path = f"{TMP_FILE_FOLDER}/{p_id}.txt"
+    if os.path.exists(out_tmp_file_path):
+        os.remove(out_tmp_file_path)
+    buffer_segment_step = math.ceil(len(individual_list) / BUFFER_SEGMENTS)
+    buffer_out_str = ""
+    with open(out_tmp_file_path, "a") as f_out:
+        for i, in_file_path in enumerate(individual_list):
+            with open(in_file_path, "r") as f_in:
+                data = json.load(f_in)
+                text = data["text"].replace("\n", " ")
+                if SET_SPLIT_SENTENCES:
+                    doc = nlp(text)
+                    for sent in doc.sents:
+                        buffer_out_str += sent.text + "\n"
+                else:
+                    buffer_out_str += text + "\n"
+                if i != 0 and (i % buffer_segment_step == 0 or i == len(individual_list) -1):
+                    f_out.write(buffer_out_str)
+                    buffer_out_str = ""
+                    print_and_log(
+                        f"process {p_id}: done with {i + 1} files, out of {len(individual_list)}"
+                    )
+    print_and_log(f"process {p_id}: done")
 
 
-def join_tmp_files(tmp_file_list):
-    print("joining tmp files into one.", flush=True)
+def multi_process(cpu_cores, global_list, single_process_function):
+
+    def get_segment_index_list(list_len, num_segment):
+        segment_index_list = []
+        step = list_len // num_segment
+        i_start = 0
+        for i_segment in range(1, num_segment + 1):
+            if i_segment < num_segment:
+                i_end = i_segment * step
+                segment_index_list.append((i_start, i_end))
+                i_start = i_end
+            else:
+                segment_index_list.append((i_start, list_len))
+        return segment_index_list
+
+    def multi_process_main():
+        segment_index_list = get_segment_index_list(len(global_list), cpu_cores)
+        process_list = []
+        for p_id, i_start_end_tuple in enumerate(segment_index_list):
+            print_and_log(
+                f"process id {p_id}: assigned to indices from {i_start_end_tuple[0]} to "
+                f"{i_start_end_tuple[1] - 1}"
+            )
+            sub_list = global_list[i_start_end_tuple[0]:i_start_end_tuple[1]]
+            process_list.append(Process(target=single_process_function, args=(p_id, sub_list)))
+        for process in process_list:
+            process.start()
+        for process in process_list:
+            process.join()
+
+    multi_process_main()
+
+
+def join_tmp_files():
+    print_and_log("joining tmp files into one.")
     with open(OUT_TXT_PATH, "w") as f_out:
-        for tmp_file_path in tmp_file_list:
+        for tmp_file_path in [TMP_FILE_FOLDER + "/" + f for f in os.listdir(TMP_FILE_FOLDER)]:
             with open(tmp_file_path, "r") as f_in:
                 f_out.write(f_in.read())
     result = subprocess.run(["du", "-sh", OUT_TXT_PATH], capture_output=True, text=True)
     data_size = result.stdout.split()[0]
     veld_data_yaml["x-veld"]["data"]["additional"]["data size"] = data_size
-    print(f"done. Size of data: {data_size}", flush=True)
+    print_and_log(f"done. Size of data: {data_size}")
     with open(OUT_VELD_DATA_YAML_PATH, "w") as f:
         yaml.dump(veld_data_yaml, f, sort_keys=False)
 
 
 def main():
-    file_list_list = get_file_list_list()
-    tmp_file_list = [f"{TMP_FILE_FOLDER}/{i}.txt" for i in range(int(CPU_COUNT))]
-    run_multi_process(file_list_list, tmp_file_list)
-    join_tmp_files(tmp_file_list)
+    try:
+        os.remove(OUT_LOG_PATH)
+    except:
+        pass
+    print_and_log(f"starting at: {datetime.now()}")
+    print_and_log(f"IN_JSON_FOLDER_PATH: {IN_JSON_FOLDER_PATH}")
+    print_and_log(f"OUT_TXT_PATH: {OUT_TXT_PATH}")
+    print_and_log(f"CPU_COUNT: {CPU_COUNT}")
+    print_and_log(f"SAMPLE_SIZE_PERCENTAGE: {SAMPLE_SIZE_PERCENTAGE}")
+    print_and_log(f"SET_SPLIT_SENTENCES: {SET_SPLIT_SENTENCES}")
+    print_and_log(f"SAMPLE_RANDOM_SEED: {SAMPLE_RANDOM_SEED}")
+    print_and_log(f"BUFFER_SEGMENTS: {BUFFER_SEGMENTS}")
+
+    in_file_list = get_file_list()
+    multi_process(
+        cpu_cores=CPU_COUNT, 
+        global_list=in_file_list, 
+        single_process_function=single_process
+    )
+    join_tmp_files()
+    print_and_log(f"done at: {datetime.now()}")
 
 
 if __name__ == "__main__":
