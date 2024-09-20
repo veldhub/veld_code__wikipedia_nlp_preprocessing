@@ -53,7 +53,7 @@ x-veld:
         description: "a random seed in case a random sample is drawn and its randomness should be fixed."
         env_type: "int"
         optional: true
-        default: 42
+        default: null
       buffer_segments:
         description: "The interval at which progress should be printed. E.g. 100 means to print hundred times during processing."
         env_type: "int"
@@ -75,6 +75,6 @@ services:
       cpu_count: null
       set_split_sentences: false
       sample_size_percentage: 100
-      sample_random_seed: 42
+      sample_random_seed: null
       buffer_segments: 10
 

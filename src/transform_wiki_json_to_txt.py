@@ -3,8 +3,8 @@ import math
 import os
 import random
 import subprocess
-from multiprocessing import Process
 from datetime import datetime
+from multiprocessing import Process
 
 import spacy
 import yaml
