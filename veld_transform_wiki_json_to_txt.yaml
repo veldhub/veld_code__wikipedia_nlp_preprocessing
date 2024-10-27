@@ -7,8 +7,9 @@ x-veld:
       - "ETL"
 
     inputs:
-      - description: "a folder with json files, where each file contains the contents of a wikipedia article"
-        volume: /veld/input/
+      - volume: /veld/input/
+        description: "a folder containing json files, where each file contains the contents of a
+          wikipedia article"
         environment: in_json_folder
         file_type: "json"
         contents:
@@ -16,8 +17,8 @@ x-veld:
           - "raw text"
 
     outputs:
-      - description: "single txt file, containing only raw content of wikipedia pagaes, split into sentences or per article with a newline each, possibly being only a sampled subset for testing."
-        volume: /veld/output/
+      - volume: /veld/output/
+        description: "single txt file, containing only raw content of wikipedia pagaes, split into sentences or per article with a newline each, possibly being only a sampled subset for testing."
         environment: out_txt_file
         file_type: "txt"
         contents:
@@ -25,36 +26,33 @@ x-veld:
           - "word embeddings training data"
           - "raw text"
 
-    environment:
-      in_json_folder:
-        description: "name of folder containing all json files"
-      out_txt_file:
-        description: "name of txt file with concatanated contents of json files"
-      out_data_description:
-        description: "short human description for the data and its purpose"
+    settings:
+      - environment: out_data_description
+        description: "short human description for the data and its purpose, will be persisted in a
+          data veld yaml"
         env_type: "string"
         optional: true
-      cpu_count:
+      - environment: cpu_count
         description: "number of cpu cores to be used for parallel processing"
         env_type: "int"
         optional: true
         default: "maximum number of available cpu cores"
-      set_split_sentences:
+      - environment: set_split_sentences
         description: "Should the resulting txt be split by newlines at each sentence boundary? If not, then newlines will be set at the end of each article."
         env_type: "boolean"
         optional: true
         default: false
-      sample_size_percentage:
+      - environment: sample_size_percentage
         description: "As percentage, can be used to transform only a sample of the data, for testing purpose most likely. The sample is randomly picked, and a random seed can also be set with `sample_random_seed`"
         env_type: "float"
         optional: true
         default: 100
-      sample_random_seed:
+      - environment: sample_random_seed
         description: "a random seed in case a random sample is drawn and its randomness should be fixed."
-        env_type: "int"
+        env_type: "str"
         optional: true
         default: null
-      buffer_segments:
+      - environment: buffer_segments
         description: "The interval at which progress should be printed. E.g. 100 means to print hundred times during processing."
         env_type: "int"
         optional: true 
@@ -76,5 +74,5 @@ services:
       set_split_sentences: false
       sample_size_percentage: 100
       sample_random_seed: null
-      buffer_segments: 10
+      buffer_segments: 100
 
