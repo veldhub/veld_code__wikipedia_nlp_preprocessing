@@ -92,8 +92,9 @@ def single_process(p_id, individual_list):
                     if i != 0 and (i % buffer_segment_step == 0 or i == len(individual_list) -1):
                         f_out.write(buffer_out_str)
                         buffer_out_str = ""
+                        perc_current = round(100 / len(individual_list) * (i + 1))
                         print_and_log(
-                            f"process {p_id}: done with {i + 1} files, out of {len(individual_list)}"
+                            f"process {p_id}: done with {perc_current}% of files ({i + 1} out of {len(individual_list)})"
                         )
     print_and_log(f"process {p_id}: done")
 
