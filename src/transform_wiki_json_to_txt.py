@@ -10,7 +10,7 @@ import spacy
 import yaml
 
 
-IN_JSON_FOLDER_PATH = "/veld/input/" + os.getenv("in_json_folder") + "/"
+IN_JSON_FOLDER_PATH = "/veld/input/"
 OUT_TXT_PATH = "/veld/output/" + os.getenv("out_txt_file")
 OUT_LOG_PATH = "/veld/output/log.txt"
 OUT_VELD_DATA_YAML_PATH = "/veld/output/veld_data_transformed.yaml"
@@ -82,18 +82,19 @@ def single_process(p_id, individual_list):
             with open(in_file_path, "r") as f_in:
                 data = json.load(f_in)
                 text = data["text"].replace("\n", " ")
-                if SET_SPLIT_SENTENCES:
-                    doc = nlp(text)
-                    for sent in doc.sents:
-                        buffer_out_str += sent.text + "\n"
-                else:
-                    buffer_out_str += text + "\n"
-                if i != 0 and (i % buffer_segment_step == 0 or i == len(individual_list) -1):
-                    f_out.write(buffer_out_str)
-                    buffer_out_str = ""
-                    print_and_log(
-                        f"process {p_id}: done with {i + 1} files, out of {len(individual_list)}"
-                    )
+                if text != "":
+                    if SET_SPLIT_SENTENCES:
+                        doc = nlp(text)
+                        for sent in doc.sents:
+                            buffer_out_str += sent.text + "\n"
+                    else:
+                        buffer_out_str += text + "\n"
+                    if i != 0 and (i % buffer_segment_step == 0 or i == len(individual_list) -1):
+                        f_out.write(buffer_out_str)
+                        buffer_out_str = ""
+                        print_and_log(
+                            f"process {p_id}: done with {i + 1} files, out of {len(individual_list)}"
+                        )
     print_and_log(f"process {p_id}: done")
 
 
@@ -150,7 +151,6 @@ def main():
     except:
         pass
     print_and_log(f"starting at: {datetime.now()}")
-    print_and_log(f"IN_JSON_FOLDER_PATH: {IN_JSON_FOLDER_PATH}")
     print_and_log(f"OUT_TXT_PATH: {OUT_TXT_PATH}")
     print_and_log(f"CPU_COUNT: {CPU_COUNT}")
     print_and_log(f"SAMPLE_SIZE_PERCENTAGE: {SAMPLE_SIZE_PERCENTAGE}")

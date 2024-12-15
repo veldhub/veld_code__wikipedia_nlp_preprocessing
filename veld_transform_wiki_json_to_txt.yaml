@@ -10,7 +10,6 @@ x-veld:
       - volume: /veld/input/
         description: "a folder containing json files, where each file contains the contents of a
           wikipedia article"
-        environment: in_json_folder
         file_type: "json"
         contents:
           - "NLP training data"
@@ -67,7 +66,6 @@ services:
       - ./data/wikipedia_txt/:/veld/output/
     command: python /veld/code/transform_wiki_json_to_txt.py
     environment:
-      in_json_folder: null
       out_txt_file: null
       out_data_description: null
       cpu_count: null
