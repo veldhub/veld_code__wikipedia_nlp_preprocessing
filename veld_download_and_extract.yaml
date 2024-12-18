@@ -18,7 +18,7 @@ x-veld:
     settings:
       - environment: wikipedia_dump_url
         description: "url to a wikipdedia dump download, from https://dumps.wikimedia.org/"
-        env_type: "url"
+        env_type: "str"
       - environment: out_data_description
         description: "short human description for the data and its purpose, will be persisted in a
           data veld yaml"
