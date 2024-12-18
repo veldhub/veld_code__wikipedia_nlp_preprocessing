@@ -38,7 +38,7 @@ x-veld:
         default: "maximum number of available cpu cores"
       - environment: set_split_sentences
         description: "Should the resulting txt be split by newlines at each sentence boundary? If not, then newlines will be set at the end of each article."
-        env_type: "boolean"
+        env_type: "bool"
         optional: true
         default: false
       - environment: sample_size_percentage
