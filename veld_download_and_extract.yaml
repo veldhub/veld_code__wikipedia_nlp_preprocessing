@@ -22,7 +22,7 @@ x-veld:
       - environment: out_data_description
         description: "short human description for the data and its purpose, will be persisted in a
           data veld yaml"
-        env_type: "string"
+        env_type: "str"
         optional: true
       
 
