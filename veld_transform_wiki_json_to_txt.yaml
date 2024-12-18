@@ -1,59 +1,59 @@
 x-veld:
   code:
     description: "transforming wikipedia raw jsons to a single txt file."
-    topics:
+    topic:
       - "NLP"
       - "Machine Learning"
       - "ETL"
 
-    inputs:
+    input:
       - volume: /veld/input/
-        description: "a folder containing json files, where each file contains the contents of a
+        description: "a folder containing json files, where each file contains the content of a
           wikipedia article"
         file_type: "json"
-        contents:
+        content:
           - "NLP training data"
           - "raw text"
 
-    outputs:
+    output:
       - volume: /veld/output/
         description: "single txt file, containing only raw content of wikipedia pagaes, split into sentences or per article with a newline each, possibly being only a sampled subset for testing."
-        environment: out_txt_file
+        environment_var: out_txt_file
         file_type: "txt"
-        contents:
+        content:
           - "NLP training data"
           - "word embeddings training data"
           - "raw text"
 
-    settings:
-      - environment: out_data_description
+    config:
+      - environment_var: out_data_description
         description: "short human description for the data and its purpose, will be persisted in a
           data veld yaml"
-        env_type: "str"
+        var_type: "str"
         optional: true
-      - environment: cpu_count
+      - environment_var: cpu_count
         description: "number of cpu cores to be used for parallel processing"
-        env_type: "int"
+        var_type: "int"
         optional: true
         default: "maximum number of available cpu cores"
-      - environment: set_split_sentences
+      - environment_var: set_split_sentences
         description: "Should the resulting txt be split by newlines at each sentence boundary? If not, then newlines will be set at the end of each article."
-        env_type: "bool"
+        var_type: "bool"
         optional: true
         default: false
-      - environment: sample_size_percentage
+      - environment_var: sample_size_percentage
         description: "As percentage, can be used to transform only a sample of the data, for testing purpose most likely. The sample is randomly picked, and a random seed can also be set with `sample_random_seed`"
-        env_type: "float"
+        var_type: "float"
         optional: true
         default: 100
-      - environment: sample_random_seed
+      - environment_var: sample_random_seed
         description: "a random seed in case a random sample is drawn and its randomness should be fixed."
-        env_type: "str"
+        var_type: "str"
         optional: true
         default: null
-      - environment: buffer_segments
+      - environment_var: buffer_segments
         description: "The interval at which progress should be printed. E.g. 100 means to print hundred times during processing."
-        env_type: "int"
+        var_type: "int"
         optional: true 
         default: 100
 

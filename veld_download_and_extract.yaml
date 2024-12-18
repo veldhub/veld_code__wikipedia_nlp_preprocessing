@@ -1,28 +1,28 @@
 x-veld:
   code:
     description: "downloading wikipedia archive and extracting each article to a json file."
-    topics:
+    topic:
       - "NLP"
       - "Machine Learning"
       - "ETL"
 
-    outputs:
+    output:
       - volume: /veld/output/
-        description: "a folder containing json files, where each file contains the contents of a
+        description: "a folder containing json files, where each file contains the content of a
           wikipedia article"
         file_type: "json"
-        contents: 
+        content: 
           - "NLP training data"
           - "raw text"
 
-    settings:
-      - environment: wikipedia_dump_url
+    config:
+      - environment_var: wikipedia_dump_url
         description: "url to a wikipdedia dump download, from https://dumps.wikimedia.org/"
-        env_type: "str"
-      - environment: out_data_description
+        var_type: "str"
+      - environment_var: out_data_description
         description: "short human description for the data and its purpose, will be persisted in a
           data veld yaml"
-        env_type: "str"
+        var_type: "str"
         optional: true
       
 
