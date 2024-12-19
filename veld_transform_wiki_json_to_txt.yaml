@@ -8,7 +8,7 @@ x-veld:
 
     input:
       - volume: /veld/input/
-        description: "a folder containing json files, where each file contains the content of a
+        description: "a folder containing json files, where each file contains the contents of a
           wikipedia article"
         file_type: "json"
         content:
@@ -22,7 +22,7 @@ x-veld:
         file_type: "txt"
         content:
           - "NLP training data"
-          - "word embeddings training data"
+          - "Word Embeddings training data"
           - "raw text"
 
     config:
