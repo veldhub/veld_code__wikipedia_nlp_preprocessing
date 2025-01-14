@@ -15,6 +15,13 @@ A code veld may be integrated into a chain veld, or used directly by adapting th
 within its yaml file and using the template folders provided in this repo. Open the respective veld 
 yaml file for more information.
 
+Run a veld with:
+```
+docker compose -f <VELD_NAME>.yaml up
+```
+
+## contained code velds
+
 **[./veld_download_and_extract.yaml](./veld_download_and_extract.yaml)**
 
 Downloads and extracts an entire wikipedia dump into json files.
